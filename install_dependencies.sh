@@ -216,7 +216,7 @@ fi
 
 # 6. Install lsb-release if missing (needed for some scripts)
 if [[ "$(uname)" == "Linux" ]]; then
-  if $SUDO apt-get update > /dev/null && $SUDO apt-get install -y lsb-release; then
+  if $SUDO apt-get update && $SUDO apt-get install -y lsb-release; then
       echo -e "${GREEN}✅ lsb-release installed via apt.${NC}"
   else
       echo -e "${RED}apt installation failed. Please check for errors and install manually.${NC}"
