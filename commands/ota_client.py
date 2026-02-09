@@ -730,15 +730,18 @@ def download_package(
 
     manifest = _fetch_archive_manifest(archive_name, platform_str, archive_version)
     if manifest is None:
+        print(f"⚠️ OTA: no archive found for '{archive_name}' on {platform_str}")
         return None
 
     packages, archive_id, actual_version = manifest
     if not archive_id:
+        print(f"⚠️ OTA: archive has no ID for '{archive_name}' on {platform_str}")
         return None
 
     # Parse version specifier
     spec = parse_version_specifier(spec_str)
     if spec is None:
+        print(f"⚠️ OTA: invalid version specifier '{spec_str}' for '{package_name}'")
         return None
 
     # Find best matching package in archive
@@ -761,11 +764,16 @@ def download_package(
             continue
 
     if not best_pkg:
+        print(
+            f"⚠️ OTA: '{package_name}' not found in archive"
+            f" (spec: '{spec_str or 'any'}', platform: {platform_str})"
+        )
         return None
 
     # Download the package
     pkg_id = best_pkg.get("packageId") or best_pkg.get("id")
     if not pkg_id:
+        print(f"⚠️ OTA: '{package_name}' has no ID in archive manifest")
         return None
     tag = best_pkg.get("tagName") or best_pkg.get("version", "")
     version = tag.lstrip("v") if tag else "0.0.0"
@@ -820,6 +828,7 @@ def download_all_from_archive(
 
     packages, archive_id, actual_version = manifest
     if not archive_id:
+        print(f"⚠️ OTA: archive has no ID for '{archive_name}' on {platform_str}")
         return {}
 
     print(f"📦 Using archive: {archive_name} v{actual_version or 'latest'}")
