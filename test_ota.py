@@ -4883,6 +4883,31 @@ class TestInstallOutcomeDecision(unittest.TestCase):
         self.assertEqual(terminal["eventType"], "failed")
         self.assertEqual(terminal["errorCode"], "unknown")
 
+    def test_clean_run_carries_the_callers_verification_detail(self):
+        ota.record_install_event("started")
+
+        ota.report_install_outcome(
+            True, detail={"runtimeVerification": "artifact_only"}
+        )
+
+        terminal = self._events()[-1]
+        self.assertEqual(terminal["eventType"], "succeeded")
+        self.assertEqual(
+            terminal["detail"], {"runtimeVerification": "artifact_only"}
+        )
+
+    def test_failure_outranks_and_drops_success_detail(self):
+        ota.record_install_event("started")
+        ota.note_install_failure("activate", "service_failed")
+
+        ota.report_install_outcome(
+            True, detail={"runtimeVerification": "health_checked"}
+        )
+
+        terminal = self._events()[-1]
+        self.assertEqual(terminal["eventType"], "failed")
+        self.assertNotIn("detail", terminal)
+
 
 class TestInstallIntegration(unittest.TestCase):
     """Verify OTA is used correctly in install_command."""

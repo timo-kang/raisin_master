@@ -832,12 +832,16 @@ def install_attempt_started() -> bool:
     return _install_event_marker_seen(get_install_session_id(), "started")
 
 
-def report_install_outcome(overall_success: bool) -> Optional[dict]:  # noqa: C901
+def report_install_outcome(
+    overall_success: bool, detail: Optional[dict] = None
+) -> Optional[dict]:  # noqa: C901
     """Close the attempt with exactly one terminal event.
 
     Only the caller knows whether the run as a whole worked, and a noted
     failure outranks it: `install_command` returns True when *any* package
     landed, so a partial archive install would otherwise report success.
+    `detail` describes only a successful run and is deliberately discarded
+    when a failure was noted; failure attribution remains the first cause.
     """
     if not install_attempt_started():
         return None
@@ -849,7 +853,7 @@ def report_install_outcome(overall_success: bool) -> Optional[dict]:  # noqa: C9
             "failed", stage=stage, error_code=error_code, error_message=message
         )
     if overall_success:
-        return record_install_event("succeeded")
+        return record_install_event("succeeded", detail=detail)
     return record_install_event(
         "failed",
         error_code=ERROR_UNKNOWN,
